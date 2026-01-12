@@ -10,6 +10,23 @@ Students and writers frequently struggle with grammar, spelling, and writing qua
 
 ---
 
+## Quick Start with Docker (Recommended)
+This runs both the backend and frontend in a single container.
+
+1.  **Build the image**:
+    ```bash
+    docker build -t studykit .
+    ```
+
+2.  **Run the container**:
+    ```bash
+    docker run -p 8000:8000 studykit
+    ```
+
+3.  **Access the app**:
+    Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+## Local Development
 ## 📋 System Overview
 
 **StudyKit** is a comprehensive educational web platform designed to help students improve their writing and study skills.

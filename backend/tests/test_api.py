@@ -12,24 +12,30 @@ def test_health_check():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_t5_grammar_check():
-    # Test specific neural correction like "gooing grate" -> "going great"
-    # This proves context awareness
+    # Test specific neural correction and spelling
+    # "gooing" -> "going" (T5 Context or Spelling)
+    # "grate" -> "well" (T5 Context)
+    # "mistaks" -> "mistakes" (Spelling Fallback)
+    
     response = client.post(
         "/api/check-grammar",
-        json={"text": "I hope your day is gooing grate."}
+        json={"text": "I hope your day is gooing grate. This text has many mistaks."}
     )
     assert response.status_code == 200
     data = response.json()
     errors = data.get("errors", [])
     assert len(errors) > 0
     
-    # Check if we have suggestions for 'gooing' -> 'going'
     suggestions = [e['suggestion'].lower() for e in errors]
+    messages = [e['message'].lower() for e in errors]
+    
+    # Check T5 context fix
     assert any("going" in s for s in suggestions)
-    # The model might suggest 'great' or 'well' depending on training. Both are valid.
-    # We saw it suggested 'going well' in manual test.
     assert any("well" in s or "great" in s for s in suggestions)
+    
+    # Check Spelling Fallback (LanguageTool/TextBlob)
+    # "mistaks" should be caught even if T5 ignores it (or if T5 fixes it, great)
+    assert any("mistake" in s for s in suggestions) or any("mistake" in m for m in messages)
 
 def test_summarize_lsa():
     text = (

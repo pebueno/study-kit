@@ -1,7 +1,8 @@
 import nltk
 from textblob import TextBlob
-from transformers import pipeline
+from transformers import pipeline, T5ForConditionalGeneration, T5Tokenizer
 import logging
+import torch
 
 # Global model cache
 grammar_corrector = None
@@ -22,12 +23,24 @@ def init_nlp():
         TextBlob("Init").correct()
         
         # Load T5 Model for Grammar Correction
-        # Using a smaller, fast model for CPU inference
         print("Loading T5 Grammar Model (this may take a moment)...")
+        model_name = "vennify/t5-base-grammar-correction"
+        
+        # Load tokenizer and model separately to enable quantization
+        tokenizer = T5Tokenizer.from_pretrained(model_name)
+        model = T5ForConditionalGeneration.from_pretrained(model_name)
+        
+        # Apply Dynamic Quantization (Linear layers -> int8)
+        # This reduces size and speeds up CPU inference significantly
+        print("Optimizing model with dynamic quantization...")
+        quantized_model = torch.quantization.quantize_dynamic(
+            model, {torch.nn.Linear}, dtype=torch.qint8
+        )
+        
         grammar_corrector = pipeline(
             "text2text-generation",
-            model="vennify/t5-base-grammar-correction",
-            tokenizer="vennify/t5-base-grammar-correction"
+            model=quantized_model,
+            tokenizer=tokenizer
         )
         print("NLP data and models initialized successfully.")
     except Exception as e:
