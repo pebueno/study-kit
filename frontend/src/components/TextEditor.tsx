@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { Statistics } from './Statistics';
-import { getTextStats, EXAMPLE_TEXT } from '@/lib/grammarChecker';
+import { getTextStats, EXAMPLE_TEXT, checkGrammar, summarizeText, getSynonyms } from '@/lib/grammarChecker';
 import { TextStats } from '@/types/grammar';
 
 const STORAGE_KEY = 'studykit-last-text';
@@ -80,63 +80,41 @@ export function TextEditor() {
     setIsProcessing(true);
 
     try {
-      // Simulate processing delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       let result = '';
 
       if (mode === 'grammar') {
-        // Mock grammar fixing - simulate corrections
-        result = text
-          .replace(/\btheir\b/gi, 'there')
-          .replace(/\bteh\b/gi, 'the')
-          .replace(/\brecieve\b/gi, 'receive')
-          .replace(/\bsentense\b/gi, 'sentence')
-          .replace(/\bneeds to be fix\b/gi, 'needs to be fixed')
-          .replace(/\bmistake\b/gi, 'mistakes')
-          .replace(/\bdefinately\b/gi, 'definitely')
-          .replace(/\boccured\b/gi, 'occurred')
-          .replace(/\bseperately\b/gi, 'separately')
-          .replace(/\buntil\b/gi, 'until');
+        const checkResult = await checkGrammar(text);
         
+        // Apply corrections automatically for "Fix Grammar" behavior
+        let fixedText = text;
+        // Apply in reverse order to preserve indices
+        const sortedErrors = [...checkResult.errors].sort((a, b) => b.startIndex - a.startIndex);
+        
+        sortedErrors.forEach(err => {
+          if (err.suggestion) {
+            fixedText = fixedText.substring(0, err.startIndex) + err.suggestion + fixedText.substring(err.endIndex);
+          }
+        });
+        
+        result = fixedText;
+        
+        const errorCount = checkResult.errors.length;
         toast({
           title: 'Grammar checked!',
-          description: 'Your text has been corrected.',
+          description: errorCount > 0 ? `Found and fixed ${errorCount} issues.` : 'No issues found.',
         });
       } else if (mode === 'summarize') {
-        // Mock summarization
-        const sentences = text.split(/[.!?]+/).filter(s => s.trim());
-        if (sentences.length <= 2) {
-          result = text;
-        } else {
-          // Take first and last meaningful sentences as a simple summary
-          result = sentences.slice(0, Math.ceil(sentences.length / 3)).join('. ').trim() + '.';
-        }
+        result = await summarizeText(text);
         
         toast({
           title: 'Text summarized!',
           description: 'Your summary is ready.',
         });
       } else if (mode === 'synonym') {
-        // Mock synonym replacement
-        const synonyms: Record<string, string[]> = {
-          good: ['excellent', 'great', 'wonderful', 'superb'],
-          bad: ['poor', 'terrible', 'awful', 'dreadful'],
-          happy: ['joyful', 'delighted', 'pleased', 'content'],
-          sad: ['unhappy', 'sorrowful', 'melancholy', 'downcast'],
-          big: ['large', 'huge', 'enormous', 'massive'],
-          small: ['tiny', 'little', 'miniature', 'compact'],
-          fast: ['quick', 'rapid', 'swift', 'speedy'],
-          slow: ['gradual', 'leisurely', 'unhurried', 'sluggish'],
-          important: ['crucial', 'essential', 'vital', 'significant'],
-          many: ['numerous', 'several', 'various', 'countless'],
-        };
-
-        const wordLower = synonymWord.toLowerCase();
-        const synonymList = synonyms[wordLower];
+        const synonyms = await getSynonyms(synonymWord);
         
-        if (synonymList) {
-          const randomSynonym = synonymList[Math.floor(Math.random() * synonymList.length)];
+        if (synonyms.length > 0) {
+          const randomSynonym = synonyms[Math.floor(Math.random() * synonyms.length)];
           const regex = new RegExp(`\\b${synonymWord}\\b`, 'gi');
           result = text.replace(regex, randomSynonym);
           
@@ -158,7 +136,7 @@ export function TextEditor() {
     } catch (error) {
       toast({
         title: 'Error processing text',
-        description: 'Something went wrong. Please try again.',
+        description: 'Something went wrong. Please check your connection.',
         variant: 'destructive',
       });
     } finally {
