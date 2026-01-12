@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: study-kit
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+    # Free tier services sleep after 15 minutes of inactivity
+    # They will wake up on the next request (cold start ~30s)
