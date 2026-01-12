@@ -2,10 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
 from app.api.endpoints import router as api_router
+from app.utils.nlp import init_nlp
 import os
 
-app = FastAPI(title="StudyKit API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load NLP models
+    init_nlp()
+    yield
+
+app = FastAPI(title="StudyKit API", version="1.0.0", lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(
