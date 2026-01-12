@@ -1,0 +1,104 @@
+openapi: 3.0.0
+info:
+  title: StudyKit API
+  version: 1.0.0
+  description: API for StudyKit grammar, summary, and synonym tools.
+paths:
+  /api/check-grammar:
+    post:
+      summary: Check text for grammar and spelling errors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "Their are many mistake in this sentense."
+      responses:
+        '200':
+          description: Grammar check results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [spelling, grammar, style]
+                        position:
+                          type: object
+                          properties:
+                            start:
+                              type: integer
+                            end:
+                              type: integer
+                        suggestion:
+                          type: string
+                        message:
+                          type: string
+  /api/summarize:
+    post:
+      summary: Summarize text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "Long text to summarize..."
+      responses:
+        '200':
+          description: Summarization result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+  /api/synonyms:
+    post:
+      summary: Get synonyms for a word
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+                - word
+              properties:
+                text:
+                  type: string
+                  description: Context text (optional but recommended)
+                word:
+                  type: string
+                  description: Word to find synonyms for
+      responses:
+        '200':
+          description: List of synonyms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  synonyms:
+                    type: array
+                    items:
+                      type: string
