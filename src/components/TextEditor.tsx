@@ -27,14 +27,13 @@ import { TextStats } from '@/types/grammar';
 
 const STORAGE_KEY = 'studykit-last-text';
 
-type Language = 'en' | 'pt';
+
 type Mode = 'grammar' | 'summarize' | 'synonym';
 
 export function TextEditor() {
   const [text, setText] = useState('');
   const [resultText, setResultText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
   const [mode, setMode] = useState<Mode>('grammar');
   const [synonymWord, setSynonymWord] = useState('');
   const [stats, setStats] = useState<TextStats>({ wordCount: 0, charCount: 0, sentenceCount: 0 });
@@ -101,8 +100,8 @@ export function TextEditor() {
           .replace(/\buntil\b/gi, 'until');
         
         toast({
-          title: language === 'en' ? 'Grammar checked!' : 'Gramática verificada!',
-          description: language === 'en' ? 'Your text has been corrected.' : 'Seu texto foi corrigido.',
+          title: 'Grammar checked!',
+          description: 'Your text has been corrected.',
         });
       } else if (mode === 'summarize') {
         // Mock summarization
@@ -115,8 +114,8 @@ export function TextEditor() {
         }
         
         toast({
-          title: language === 'en' ? 'Text summarized!' : 'Texto resumido!',
-          description: language === 'en' ? 'Your summary is ready.' : 'Seu resumo está pronto.',
+          title: 'Text summarized!',
+          description: 'Your summary is ready.',
         });
       } else if (mode === 'synonym') {
         // Mock synonym replacement
@@ -142,18 +141,14 @@ export function TextEditor() {
           result = text.replace(regex, randomSynonym);
           
           toast({
-            title: language === 'en' ? 'Synonyms replaced!' : 'Sinônimos substituídos!',
-            description: language === 'en' 
-              ? `Replaced "${synonymWord}" with "${randomSynonym}".`
-              : `Substituído "${synonymWord}" por "${randomSynonym}".`,
+            title: 'Synonyms replaced!',
+            description: `Replaced "${synonymWord}" with "${randomSynonym}".`,
           });
         } else {
           result = text;
           toast({
-            title: language === 'en' ? 'No synonyms found' : 'Nenhum sinônimo encontrado',
-            description: language === 'en' 
-              ? `Could not find synonyms for "${synonymWord}".`
-              : `Não foi possível encontrar sinônimos para "${synonymWord}".`,
+            title: 'No synonyms found',
+            description: `Could not find synonyms for "${synonymWord}".`,
             variant: 'destructive',
           });
         }
@@ -169,7 +164,7 @@ export function TextEditor() {
     } finally {
       setIsProcessing(false);
     }
-  }, [text, mode, synonymWord, language]);
+  }, [text, mode, synonymWord]);
 
   const handleClear = useCallback(() => {
     setText('');
@@ -177,36 +172,36 @@ export function TextEditor() {
     setSynonymWord('');
     localStorage.removeItem(STORAGE_KEY);
     toast({
-      title: language === 'en' ? 'Text cleared' : 'Texto limpo',
-      description: language === 'en' ? 'Your text has been cleared.' : 'Seu texto foi limpo.',
+      title: 'Text cleared',
+      description: 'Your text has been cleared.',
     });
-  }, [language]);
+  }, []);
 
   const handleLoadExample = useCallback(() => {
     setText(EXAMPLE_TEXT);
     setResultText('');
     toast({
-      title: language === 'en' ? 'Example loaded' : 'Exemplo carregado',
-      description: language === 'en' ? 'Click the button below to process.' : 'Clique no botão abaixo para processar.',
+      title: 'Example loaded',
+      description: 'Click the button below to process.',
     });
-  }, [language]);
+  }, []);
 
   const handleCopyResult = useCallback(async () => {
     if (!resultText) return;
     try {
       await navigator.clipboard.writeText(resultText);
       toast({
-        title: language === 'en' ? 'Copied!' : 'Copiado!',
-        description: language === 'en' ? 'Result copied to clipboard.' : 'Resultado copiado.',
+        title: 'Copied!',
+        description: 'Result copied to clipboard.',
       });
     } catch (error) {
       toast({
-        title: language === 'en' ? 'Copy failed' : 'Falha ao copiar',
-        description: language === 'en' ? 'Could not copy text to clipboard.' : 'Não foi possível copiar o texto.',
+        title: 'Copy failed',
+        description: 'Could not copy text to clipboard.',
         variant: 'destructive',
       });
     }
-  }, [resultText, language]);
+  }, [resultText]);
 
   const handleExport = useCallback(() => {
     if (!resultText) return;
@@ -220,22 +215,22 @@ export function TextEditor() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast({
-      title: language === 'en' ? 'Exported!' : 'Exportado!',
-      description: language === 'en' ? 'Your text has been downloaded.' : 'Seu texto foi baixado.',
+      title: 'Exported!',
+      description: 'Your text has been downloaded.',
     });
-  }, [resultText, language]);
+  }, [resultText]);
 
   const getButtonLabel = () => {
     if (isProcessing) {
-      return language === 'en' ? 'Processing...' : 'Processando...';
+      return 'Processing...';
     }
     switch (mode) {
       case 'grammar':
-        return language === 'en' ? 'Fix Grammar' : 'Corrigir Gramática';
+        return 'Fix Grammar';
       case 'summarize':
-        return language === 'en' ? 'Summarize' : 'Resumir';
+        return 'Summarize';
       case 'synonym':
-        return language === 'en' ? 'Replace Synonyms' : 'Substituir Sinônimos';
+        return 'Replace Synonyms';
     }
   };
 
@@ -245,44 +240,12 @@ export function TextEditor() {
       <div className="text-center mb-6 md:mb-8">
         <h1 className="font-display text-2xl md:text-4xl font-bold mb-2 md:mb-3">
           <span className="gradient-text">
-            {language === 'en' ? 'Grammar & Writing Tools' : 'Ferramentas de Escrita'}
+            Grammar & Writing Tools
           </span>
         </h1>
         <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto px-4">
-          {language === 'en' 
-            ? 'Improve your writing with grammar correction, summarization, and synonym replacement.'
-            : 'Melhore sua escrita com correção gramatical, resumo e substituição de sinônimos.'}
+          Improve your writing with grammar correction, summarization, and synonym replacement.
         </p>
-      </div>
-
-      {/* Language Selector */}
-      <div className="flex justify-center mb-4 md:mb-6">
-        <div className="flex items-center gap-2 p-1 bg-muted rounded-full">
-          <button
-            onClick={() => setLanguage('en')}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-all text-sm md:text-base ${
-              language === 'en' 
-                ? 'bg-background shadow-sm' 
-                : 'hover:bg-background/50'
-            }`}
-            aria-label="English"
-          >
-            <span className="text-lg md:text-xl">🇺🇸</span>
-            <span className="hidden sm:inline">English</span>
-          </button>
-          <button
-            onClick={() => setLanguage('pt')}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-all text-sm md:text-base ${
-              language === 'pt' 
-                ? 'bg-background shadow-sm' 
-                : 'hover:bg-background/50'
-            }`}
-            aria-label="Português"
-          >
-            <span className="text-lg md:text-xl">🇧🇷</span>
-            <span className="hidden sm:inline">Português</span>
-          </button>
-        </div>
       </div>
 
       {/* Mode Tabs */}
@@ -290,17 +253,17 @@ export function TextEditor() {
         <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
           <TabsTrigger value="grammar" className="gap-1 md:gap-2 text-xs md:text-sm">
             <Languages className="h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">{language === 'en' ? 'Fix Grammar' : 'Gramática'}</span>
+            <span className="hidden sm:inline">Fix Grammar</span>
             <span className="sm:hidden">Fix</span>
           </TabsTrigger>
           <TabsTrigger value="summarize" className="gap-1 md:gap-2 text-xs md:text-sm">
             <FileText className="h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">{language === 'en' ? 'Summarize' : 'Resumir'}</span>
+            <span className="hidden sm:inline">Summarize</span>
             <span className="sm:hidden">Sum</span>
           </TabsTrigger>
           <TabsTrigger value="synonym" className="gap-1 md:gap-2 text-xs md:text-sm">
             <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">{language === 'en' ? 'Synonyms' : 'Sinônimos'}</span>
+            <span className="hidden sm:inline">Synonyms</span>
             <span className="sm:hidden">Syn</span>
           </TabsTrigger>
         </TabsList>
@@ -310,12 +273,12 @@ export function TextEditor() {
       {mode === 'synonym' && (
         <div className="max-w-md mx-auto mb-4 md:mb-6 px-4 md:px-0">
           <label className="block text-sm font-medium mb-2 text-center">
-            {language === 'en' ? 'Word to replace:' : 'Palavra para substituir:'}
+            Word to replace:
           </label>
           <Input
             value={synonymWord}
             onChange={(e) => setSynonymWord(e.target.value)}
-            placeholder={language === 'en' ? 'Enter a word (e.g., good, happy, big)' : 'Digite uma palavra (ex: bom, feliz, grande)'}
+            placeholder="Enter a word (e.g., good, happy, big)"
             className="text-center"
           />
         </div>
@@ -328,7 +291,7 @@ export function TextEditor() {
           <CardContent className="p-3 md:p-6">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <h2 className="font-display font-semibold text-sm md:text-base">
-                {language === 'en' ? 'Input Text' : 'Texto de Entrada'}
+                Input Text
               </h2>
               <div className="flex items-center gap-1 md:gap-2">
                 <Tooltip>
@@ -340,11 +303,11 @@ export function TextEditor() {
                       className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
                     >
                       <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">{language === 'en' ? 'Example' : 'Exemplo'}</span>
+                      <span className="hidden sm:inline">Example</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{language === 'en' ? 'Load sample text' : 'Carregar texto de exemplo'}</p>
+                    <p>Load sample text</p>
                   </TooltipContent>
                 </Tooltip>
 
@@ -361,7 +324,7 @@ export function TextEditor() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{language === 'en' ? 'Clear text' : 'Limpar texto'}</p>
+                    <p>Clear text</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -370,13 +333,9 @@ export function TextEditor() {
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={
-                language === 'en'
-                  ? 'Paste or type your text here...'
-                  : 'Cole ou digite seu texto aqui...'
-              }
+              placeholder="Paste or type your text here..."
               className="min-h-[200px] md:min-h-[280px] resize-y text-sm md:text-base leading-relaxed"
-              aria-label={language === 'en' ? 'Text input' : 'Entrada de texto'}
+              aria-label="Text input"
             />
 
             <div className="mt-3 md:mt-4">
@@ -390,7 +349,7 @@ export function TextEditor() {
           <CardContent className="p-3 md:p-6">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <h2 className="font-display font-semibold text-sm md:text-base">
-                {language === 'en' ? 'Result' : 'Resultado'}
+                Result
               </h2>
               {resultText && (
                 <div className="flex items-center gap-1 md:gap-2">
@@ -406,7 +365,7 @@ export function TextEditor() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{language === 'en' ? 'Copy result' : 'Copiar resultado'}</p>
+                      <p>Copy result</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -422,7 +381,7 @@ export function TextEditor() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{language === 'en' ? 'Download as .txt' : 'Baixar como .txt'}</p>
+                      <p>Download as .txt</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -433,13 +392,11 @@ export function TextEditor() {
               className="min-h-[200px] md:min-h-[280px] p-3 md:p-4 bg-muted/30 rounded-lg border border-input text-sm md:text-base leading-relaxed whitespace-pre-wrap overflow-y-auto"
               role="textbox"
               aria-readonly="true"
-              aria-label={language === 'en' ? 'Result text' : 'Texto resultado'}
+              aria-label="Result text"
             >
               {resultText || (
                 <span className="text-muted-foreground">
-                  {language === 'en'
-                    ? 'Your processed text will appear here...'
-                    : 'Seu texto processado aparecerá aqui...'}
+                  Your processed text will appear here...
                 </span>
               )}
             </div>
