@@ -1,4 +1,4 @@
-import { BookOpen, Github, Twitter, Mail } from 'lucide-react';
+import { BookOpen, Github, Linkedin } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -46,22 +46,16 @@ export function Footer() {
             <h3 className="font-display font-semibold mb-4">Resources</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  About Us
-                </a>
+                <span className="opacity-50">About Us</span>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Privacy Policy
-                </a>
+                <span className="opacity-50">Privacy Policy</span>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Terms of Service
-                </a>
+                <span className="opacity-50">Terms of Service</span>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <a href="mailto:pedroivobu@gmail.com" className="hover:text-foreground transition-colors">
                   Contact
                 </a>
               </li>
@@ -76,25 +70,22 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="#"
+              href="https://github.com/pebueno"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
               aria-label="GitHub"
             >
               <Github className="h-5 w-5" />
             </a>
             <a
-              href="#"
+              href="https://www.linkedin.com/in/pebuenos/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Twitter"
+              aria-label="LinkedIn"
             >
-              <Twitter className="h-5 w-5" />
-            </a>
-            <a
-              href="#"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Email"
-            >
-              <Mail className="h-5 w-5" />
+              <Linkedin className="h-5 w-5" />
             </a>
           </div>
         </div>

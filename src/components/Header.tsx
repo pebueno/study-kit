@@ -1,4 +1,4 @@
-import { BookOpen, Sparkles, Layers, Info, Menu, X } from 'lucide-react';
+import { BookOpen, Sparkles, Layers, Info, Menu, X, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,13 +12,15 @@ interface NavItem {
   icon: React.ReactNode;
   active?: boolean;
   comingSoon?: boolean;
+  href?: string;
 }
 
 const navItems: NavItem[] = [
   { label: 'Grammar Checker', icon: <BookOpen className="h-4 w-4" />, active: true },
   { label: 'Flashcards', icon: <Layers className="h-4 w-4" />, comingSoon: true },
   { label: 'Study Tools', icon: <Sparkles className="h-4 w-4" />, comingSoon: true },
-  { label: 'About', icon: <Info className="h-4 w-4" /> },
+  { label: 'About', icon: <Info className="h-4 w-4" />, comingSoon: true },
+  { label: 'Contact', icon: <Mail className="h-4 w-4" />, href: 'mailto:pedroivobu@gmail.com' },
 ];
 
 export function Header() {
@@ -45,23 +47,31 @@ export function Header() {
           {navItems.map((item) => (
             <Tooltip key={item.label}>
               <TooltipTrigger asChild>
-                <Button
-                  variant={item.active ? 'default' : 'ghost'}
-                  size="sm"
-                  className={`gap-2 ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''} ${
-                    item.active ? 'gradient-bg' : ''
-                  }`}
-                  disabled={item.comingSoon}
-                  aria-current={item.active ? 'page' : undefined}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                  {item.comingSoon && (
-                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
-                      Soon
-                    </span>
-                  )}
-                </Button>
+                {item.href ? (
+                  <a href={item.href}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </Button>
+                  </a>
+                ) : (
+                  <Button
+                    variant={item.active ? 'default' : 'ghost'}
+                    size="sm"
+                    className={`gap-2 ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''} ${
+                      item.active ? 'gradient-bg' : ''
+                    }`}
+                    disabled={item.comingSoon}
+                    aria-current={item.active ? 'page' : undefined}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Button>
+                )}
               </TooltipTrigger>
               {item.comingSoon && (
                 <TooltipContent>
@@ -95,23 +105,30 @@ export function Header() {
         >
           <div className="container py-4 flex flex-col gap-2">
             {navItems.map((item) => (
-              <Button
-                key={item.label}
-                variant={item.active ? 'default' : 'ghost'}
-                className={`justify-start gap-2 ${item.comingSoon ? 'opacity-50' : ''} ${
-                  item.active ? 'gradient-bg' : ''
-                }`}
-                disabled={item.comingSoon}
-                aria-current={item.active ? 'page' : undefined}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-                {item.comingSoon && (
-                  <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full ml-auto">
-                    Soon
-                  </span>
-                )}
-              </Button>
+              item.href ? (
+                <a key={item.label} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2"
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Button>
+                </a>
+              ) : (
+                <Button
+                  key={item.label}
+                  variant={item.active ? 'default' : 'ghost'}
+                  className={`justify-start gap-2 ${item.comingSoon ? 'opacity-50' : ''} ${
+                    item.active ? 'gradient-bg' : ''
+                  }`}
+                  disabled={item.comingSoon}
+                  aria-current={item.active ? 'page' : undefined}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Button>
+              )
             ))}
           </div>
         </nav>
