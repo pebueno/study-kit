@@ -8,10 +8,19 @@ import language_tool_python
 import random
 
 router = APIRouter()
-tool = language_tool_python.LanguageTool('en-US')
+# Use public API to avoid local Java requirement
+try:
+    tool = language_tool_python.LanguageTool('en-US', remote_server='https://api.languagetool.org/v2/')
+except Exception as e:
+    print(f"Warning: Could not initialize LanguageTool: {e}")
+    tool = None
 
 @router.post("/check-grammar", response_model=GrammarCheckResponse)
 def check_grammar(request: GrammarCheckRequest):
+    if not tool:
+        # Fallback mock if tool failed to load
+        return GrammarCheckResponse(errors=[])
+        
     matches = tool.check(request.text)
     errors = []
     for match in matches:
