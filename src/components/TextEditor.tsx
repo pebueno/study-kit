@@ -1,16 +1,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  Search,
   Trash2,
   Sparkles,
   Copy,
   Download,
   Loader2,
-  CheckCircle2,
+  ArrowRight,
+  Languages,
+  FileText,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Tooltip,
   TooltipContent,
@@ -18,18 +22,21 @@ import {
 } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { Statistics } from './Statistics';
-import { ResultsPanel } from './ResultsPanel';
-import { HighlightedText } from './HighlightedText';
-import { checkGrammar, getTextStats, EXAMPLE_TEXT } from '@/lib/grammarChecker';
-import { CheckResult, GrammarError, TextStats } from '@/types/grammar';
+import { getTextStats, EXAMPLE_TEXT } from '@/lib/grammarChecker';
+import { TextStats } from '@/types/grammar';
 
 const STORAGE_KEY = 'studykit-last-text';
 
+type Language = 'en' | 'pt';
+type Mode = 'grammar' | 'summarize' | 'synonym';
+
 export function TextEditor() {
   const [text, setText] = useState('');
-  const [isChecking, setIsChecking] = useState(false);
-  const [result, setResult] = useState<CheckResult | null>(null);
-  const [highlightedError, setHighlightedError] = useState<GrammarError | null>(null);
+  const [resultText, setResultText] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [language, setLanguage] = useState<Language>('en');
+  const [mode, setMode] = useState<Mode>('grammar');
+  const [synonymWord, setSynonymWord] = useState('');
   const [stats, setStats] = useState<TextStats>({ wordCount: 0, charCount: 0, sentenceCount: 0 });
 
   // Load saved text on mount
@@ -52,219 +59,354 @@ export function TextEditor() {
     }
   }, [text]);
 
-  const handleCheck = useCallback(async () => {
+  const handleProcess = useCallback(async () => {
     if (!text.trim()) {
       toast({
-        title: 'No text to check',
-        description: 'Please enter some text before checking.',
+        title: mode === 'grammar' ? 'No text to check' : mode === 'summarize' ? 'No text to summarize' : 'No text to process',
+        description: 'Please enter some text before processing.',
         variant: 'destructive',
       });
       return;
     }
 
-    setIsChecking(true);
-    setHighlightedError(null);
+    if (mode === 'synonym' && !synonymWord.trim()) {
+      toast({
+        title: 'No word specified',
+        description: 'Please enter a word to replace with synonyms.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsProcessing(true);
 
     try {
-      const checkResult = await checkGrammar(text);
-      setResult(checkResult);
-      toast({
-        title: 'Check complete!',
-        description: `Found ${checkResult.errors.length} issue${checkResult.errors.length !== 1 ? 's' : ''}.`,
-      });
+      // Simulate processing delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      let result = '';
+
+      if (mode === 'grammar') {
+        // Mock grammar fixing - simulate corrections
+        result = text
+          .replace(/\btheir\b/gi, 'there')
+          .replace(/\bteh\b/gi, 'the')
+          .replace(/\brecieve\b/gi, 'receive')
+          .replace(/\bsentense\b/gi, 'sentence')
+          .replace(/\bneeds to be fix\b/gi, 'needs to be fixed')
+          .replace(/\bmistake\b/gi, 'mistakes')
+          .replace(/\bdefinately\b/gi, 'definitely')
+          .replace(/\boccured\b/gi, 'occurred')
+          .replace(/\bseperately\b/gi, 'separately')
+          .replace(/\buntil\b/gi, 'until');
+        
+        toast({
+          title: language === 'en' ? 'Grammar checked!' : 'Gramática verificada!',
+          description: language === 'en' ? 'Your text has been corrected.' : 'Seu texto foi corrigido.',
+        });
+      } else if (mode === 'summarize') {
+        // Mock summarization
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+        if (sentences.length <= 2) {
+          result = text;
+        } else {
+          // Take first and last meaningful sentences as a simple summary
+          result = sentences.slice(0, Math.ceil(sentences.length / 3)).join('. ').trim() + '.';
+        }
+        
+        toast({
+          title: language === 'en' ? 'Text summarized!' : 'Texto resumido!',
+          description: language === 'en' ? 'Your summary is ready.' : 'Seu resumo está pronto.',
+        });
+      } else if (mode === 'synonym') {
+        // Mock synonym replacement
+        const synonyms: Record<string, string[]> = {
+          good: ['excellent', 'great', 'wonderful', 'superb'],
+          bad: ['poor', 'terrible', 'awful', 'dreadful'],
+          happy: ['joyful', 'delighted', 'pleased', 'content'],
+          sad: ['unhappy', 'sorrowful', 'melancholy', 'downcast'],
+          big: ['large', 'huge', 'enormous', 'massive'],
+          small: ['tiny', 'little', 'miniature', 'compact'],
+          fast: ['quick', 'rapid', 'swift', 'speedy'],
+          slow: ['gradual', 'leisurely', 'unhurried', 'sluggish'],
+          important: ['crucial', 'essential', 'vital', 'significant'],
+          many: ['numerous', 'several', 'various', 'countless'],
+        };
+
+        const wordLower = synonymWord.toLowerCase();
+        const synonymList = synonyms[wordLower];
+        
+        if (synonymList) {
+          const randomSynonym = synonymList[Math.floor(Math.random() * synonymList.length)];
+          const regex = new RegExp(`\\b${synonymWord}\\b`, 'gi');
+          result = text.replace(regex, randomSynonym);
+          
+          toast({
+            title: language === 'en' ? 'Synonyms replaced!' : 'Sinônimos substituídos!',
+            description: language === 'en' 
+              ? `Replaced "${synonymWord}" with "${randomSynonym}".`
+              : `Substituído "${synonymWord}" por "${randomSynonym}".`,
+          });
+        } else {
+          result = text;
+          toast({
+            title: language === 'en' ? 'No synonyms found' : 'Nenhum sinônimo encontrado',
+            description: language === 'en' 
+              ? `Could not find synonyms for "${synonymWord}".`
+              : `Não foi possível encontrar sinônimos para "${synonymWord}".`,
+            variant: 'destructive',
+          });
+        }
+      }
+
+      setResultText(result);
     } catch (error) {
       toast({
-        title: 'Error checking text',
+        title: 'Error processing text',
         description: 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsChecking(false);
+      setIsProcessing(false);
     }
-  }, [text]);
+  }, [text, mode, synonymWord, language]);
 
   const handleClear = useCallback(() => {
     setText('');
-    setResult(null);
-    setHighlightedError(null);
+    setResultText('');
+    setSynonymWord('');
     localStorage.removeItem(STORAGE_KEY);
     toast({
-      title: 'Text cleared',
-      description: 'Your text has been cleared.',
+      title: language === 'en' ? 'Text cleared' : 'Texto limpo',
+      description: language === 'en' ? 'Your text has been cleared.' : 'Seu texto foi limpo.',
     });
-  }, []);
+  }, [language]);
 
   const handleLoadExample = useCallback(() => {
     setText(EXAMPLE_TEXT);
-    setResult(null);
-    setHighlightedError(null);
+    setResultText('');
     toast({
-      title: 'Example loaded',
-      description: 'Click "Check Grammar" to see the errors.',
+      title: language === 'en' ? 'Example loaded' : 'Exemplo carregado',
+      description: language === 'en' ? 'Click the button below to process.' : 'Clique no botão abaixo para processar.',
     });
-  }, []);
+  }, [language]);
 
-  const handleCopyText = useCallback(async () => {
-    const textToCopy = result ? text : text;
+  const handleCopyResult = useCallback(async () => {
+    if (!resultText) return;
     try {
-      await navigator.clipboard.writeText(textToCopy);
+      await navigator.clipboard.writeText(resultText);
       toast({
-        title: 'Copied!',
-        description: 'Text copied to clipboard.',
+        title: language === 'en' ? 'Copied!' : 'Copiado!',
+        description: language === 'en' ? 'Result copied to clipboard.' : 'Resultado copiado.',
       });
     } catch (error) {
       toast({
-        title: 'Copy failed',
-        description: 'Could not copy text to clipboard.',
+        title: language === 'en' ? 'Copy failed' : 'Falha ao copiar',
+        description: language === 'en' ? 'Could not copy text to clipboard.' : 'Não foi possível copiar o texto.',
         variant: 'destructive',
       });
     }
-  }, [text, result]);
+  }, [resultText, language]);
 
   const handleExport = useCallback(() => {
-    const blob = new Blob([text], { type: 'text/plain' });
+    if (!resultText) return;
+    const blob = new Blob([resultText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'studykit-text.txt';
+    a.download = 'studykit-result.txt';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast({
-      title: 'Exported!',
-      description: 'Your text has been downloaded.',
+      title: language === 'en' ? 'Exported!' : 'Exportado!',
+      description: language === 'en' ? 'Your text has been downloaded.' : 'Seu texto foi baixado.',
     });
-  }, [text]);
+  }, [resultText, language]);
 
-  const handleFixError = useCallback((error: GrammarError) => {
-    const newText =
-      text.slice(0, error.startIndex) +
-      error.suggestion +
-      text.slice(error.endIndex);
-    setText(newText);
-
-    // Update result to remove the fixed error
-    if (result) {
-      const updatedErrors = result.errors.filter((e) => e.id !== error.id);
-      setResult({
-        ...result,
-        errors: updatedErrors,
-        stats: {
-          ...result.stats,
-          spellingErrors: updatedErrors.filter((e) => e.type === 'spelling').length,
-          grammarErrors: updatedErrors.filter((e) => e.type === 'grammar').length,
-          styleErrors: updatedErrors.filter((e) => e.type === 'style').length,
-        },
-      });
+  const getButtonLabel = () => {
+    if (isProcessing) {
+      return language === 'en' ? 'Processing...' : 'Processando...';
     }
-
-    setHighlightedError(null);
-    toast({
-      title: 'Fixed!',
-      description: `Replaced "${error.word}" with "${error.suggestion}".`,
-    });
-  }, [text, result]);
-
-  const handleHighlightError = useCallback((error: GrammarError) => {
-    setHighlightedError(error);
-  }, []);
+    switch (mode) {
+      case 'grammar':
+        return language === 'en' ? 'Fix Grammar' : 'Corrigir Gramática';
+      case 'summarize':
+        return language === 'en' ? 'Summarize' : 'Resumir';
+      case 'synonym':
+        return language === 'en' ? 'Replace Synonyms' : 'Substituir Sinônimos';
+    }
+  };
 
   return (
-    <div className="container py-8 animate-fade-in">
+    <div className="container py-4 md:py-8 animate-fade-in">
       {/* Hero Section */}
-      <div className="text-center mb-8">
-        <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">
-          <span className="gradient-text">Grammar & Spelling Checker</span>
+      <div className="text-center mb-6 md:mb-8">
+        <h1 className="font-display text-2xl md:text-4xl font-bold mb-2 md:mb-3">
+          <span className="gradient-text">
+            {language === 'en' ? 'Grammar & Writing Tools' : 'Ferramentas de Escrita'}
+          </span>
         </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Improve your writing with instant grammar, spelling, and style suggestions.
-          Perfect for essays, reports, and everyday writing.
+        <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto px-4">
+          {language === 'en' 
+            ? 'Improve your writing with grammar correction, summarization, and synonym replacement.'
+            : 'Melhore sua escrita com correção gramatical, resumo e substituição de sinônimos.'}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Editor Section */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card className="shadow-soft">
-            <CardContent className="p-6">
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={handleCheck}
-                        disabled={isChecking || !text.trim()}
-                        className="gradient-bg gap-2"
-                      >
-                        {isChecking ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Checking...
-                          </>
-                        ) : (
-                          <>
-                            <Search className="h-4 w-4" />
-                            Check Grammar
-                          </>
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Analyze your text for errors</p>
-                    </TooltipContent>
-                  </Tooltip>
+      {/* Language Selector */}
+      <div className="flex justify-center mb-4 md:mb-6">
+        <div className="flex items-center gap-2 p-1 bg-muted rounded-full">
+          <button
+            onClick={() => setLanguage('en')}
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-all text-sm md:text-base ${
+              language === 'en' 
+                ? 'bg-background shadow-sm' 
+                : 'hover:bg-background/50'
+            }`}
+            aria-label="English"
+          >
+            <span className="text-lg md:text-xl">🇺🇸</span>
+            <span className="hidden sm:inline">English</span>
+          </button>
+          <button
+            onClick={() => setLanguage('pt')}
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-all text-sm md:text-base ${
+              language === 'pt' 
+                ? 'bg-background shadow-sm' 
+                : 'hover:bg-background/50'
+            }`}
+            aria-label="Português"
+          >
+            <span className="text-lg md:text-xl">🇧🇷</span>
+            <span className="hidden sm:inline">Português</span>
+          </button>
+        </div>
+      </div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        onClick={handleClear}
-                        disabled={!text}
-                        className="gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="hidden sm:inline">Clear</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Clear all text</p>
-                    </TooltipContent>
-                  </Tooltip>
+      {/* Mode Tabs */}
+      <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-4 md:mb-6">
+        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
+          <TabsTrigger value="grammar" className="gap-1 md:gap-2 text-xs md:text-sm">
+            <Languages className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">{language === 'en' ? 'Fix Grammar' : 'Gramática'}</span>
+            <span className="sm:hidden">Fix</span>
+          </TabsTrigger>
+          <TabsTrigger value="summarize" className="gap-1 md:gap-2 text-xs md:text-sm">
+            <FileText className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">{language === 'en' ? 'Summarize' : 'Resumir'}</span>
+            <span className="sm:hidden">Sum</span>
+          </TabsTrigger>
+          <TabsTrigger value="synonym" className="gap-1 md:gap-2 text-xs md:text-sm">
+            <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">{language === 'en' ? 'Synonyms' : 'Sinônimos'}</span>
+            <span className="sm:hidden">Syn</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        onClick={handleLoadExample}
-                        className="gap-2"
-                      >
-                        <Sparkles className="h-4 w-4" />
-                        <span className="hidden sm:inline">Try Example</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Load sample text with errors</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+      {/* Synonym Input (only for synonym mode) */}
+      {mode === 'synonym' && (
+        <div className="max-w-md mx-auto mb-4 md:mb-6 px-4 md:px-0">
+          <label className="block text-sm font-medium mb-2 text-center">
+            {language === 'en' ? 'Word to replace:' : 'Palavra para substituir:'}
+          </label>
+          <Input
+            value={synonymWord}
+            onChange={(e) => setSynonymWord(e.target.value)}
+            placeholder={language === 'en' ? 'Enter a word (e.g., good, happy, big)' : 'Digite uma palavra (ex: bom, feliz, grande)'}
+            className="text-center"
+          />
+        </div>
+      )}
 
-                <div className="flex items-center gap-2">
+      {/* Main Content - Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 px-2 md:px-0">
+        {/* Input Section */}
+        <Card className="shadow-soft">
+          <CardContent className="p-3 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="font-display font-semibold text-sm md:text-base">
+                {language === 'en' ? 'Input Text' : 'Texto de Entrada'}
+              </h2>
+              <div className="flex items-center gap-1 md:gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLoadExample}
+                      className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
+                    >
+                      <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">{language === 'en' ? 'Example' : 'Exemplo'}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{language === 'en' ? 'Load sample text' : 'Carregar texto de exemplo'}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClear}
+                      disabled={!text}
+                      className="px-2 md:px-3"
+                    >
+                      <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{language === 'en' ? 'Clear text' : 'Limpar texto'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={
+                language === 'en'
+                  ? 'Paste or type your text here...'
+                  : 'Cole ou digite seu texto aqui...'
+              }
+              className="min-h-[200px] md:min-h-[280px] resize-y text-sm md:text-base leading-relaxed"
+              aria-label={language === 'en' ? 'Text input' : 'Entrada de texto'}
+            />
+
+            <div className="mt-3 md:mt-4">
+              <Statistics stats={stats} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Output Section */}
+        <Card className="shadow-soft">
+          <CardContent className="p-3 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="font-display font-semibold text-sm md:text-base">
+                {language === 'en' ? 'Result' : 'Resultado'}
+              </h2>
+              {resultText && (
+                <div className="flex items-center gap-1 md:gap-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        onClick={handleCopyText}
-                        disabled={!text}
-                        aria-label="Copy text"
+                        size="sm"
+                        onClick={handleCopyResult}
+                        className="px-2 md:px-3"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Copy to clipboard</p>
+                      <p>{language === 'en' ? 'Copy result' : 'Copiar resultado'}</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -272,108 +414,65 @@ export function TextEditor() {
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="sm"
                         onClick={handleExport}
-                        disabled={!text}
-                        aria-label="Export text"
+                        className="px-2 md:px-3"
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Download as .txt file</p>
+                      <p>{language === 'en' ? 'Download as .txt' : 'Baixar como .txt'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
-              </div>
-
-              {/* Text Display with Highlights (when results exist) */}
-              {result && result.errors.length > 0 ? (
-                <div
-                  className="min-h-[280px] max-h-[400px] overflow-y-auto p-4 bg-muted/30 rounded-lg border border-input mb-4 text-base leading-relaxed whitespace-pre-wrap"
-                  role="textbox"
-                  aria-label="Text with highlighted errors"
-                >
-                  <HighlightedText
-                    text={text}
-                    errors={result.errors}
-                    highlightedError={highlightedError}
-                    onErrorClick={handleHighlightError}
-                  />
-                </div>
-              ) : (
-                <Textarea
-                  value={text}
-                  onChange={(e) => {
-                    setText(e.target.value);
-                    setResult(null);
-                  }}
-                  placeholder="Paste or type your text here to check for grammar and spelling errors..."
-                  className="min-h-[280px] resize-y text-base leading-relaxed"
-                  aria-label="Text input for grammar checking"
-                />
               )}
+            </div>
 
-              {/* Statistics */}
-              <div className="flex items-center justify-between">
-                <Statistics stats={stats} />
-                {result && result.errors.length === 0 && (
-                  <span className="flex items-center gap-1 text-sm text-success">
-                    <CheckCircle2 className="h-4 w-4" />
-                    No issues found!
-                  </span>
-                )}
+            <div
+              className="min-h-[200px] md:min-h-[280px] p-3 md:p-4 bg-muted/30 rounded-lg border border-input text-sm md:text-base leading-relaxed whitespace-pre-wrap overflow-y-auto"
+              role="textbox"
+              aria-readonly="true"
+              aria-label={language === 'en' ? 'Result text' : 'Texto resultado'}
+            >
+              {resultText || (
+                <span className="text-muted-foreground">
+                  {language === 'en'
+                    ? 'Your processed text will appear here...'
+                    : 'Seu texto processado aparecerá aqui...'}
+                </span>
+              )}
+            </div>
+
+            {resultText && (
+              <div className="mt-3 md:mt-4">
+                <Statistics stats={getTextStats(resultText)} />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Empty State */}
-          {!text && !result && (
-            <Card className="border-dashed">
-              <CardContent className="p-8 text-center">
-                <div className="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-8 w-8 text-primary-foreground" />
-                </div>
-                <h3 className="font-display font-semibold text-lg mb-2">
-                  Ready to improve your writing?
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Paste your text above or try our example to see how it works.
-                </p>
-                <Button variant="outline" onClick={handleLoadExample} className="gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Load Example Text
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Results Panel */}
-        <div className="lg:col-span-1">
-          <Card className="shadow-soft h-fit lg:sticky lg:top-24">
-            {result ? (
-              <ResultsPanel
-                result={result}
-                highlightedError={highlightedError}
-                onFixError={handleFixError}
-                onHighlightError={handleHighlightError}
-              />
-            ) : (
-              <CardContent className="p-6">
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                    <Search className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="font-display font-semibold mb-2">No Results Yet</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Enter some text and click "Check Grammar" to see your analysis results here.
-                  </p>
-                </div>
-              </CardContent>
             )}
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Action Button */}
+      <div className="flex justify-center mt-4 md:mt-6 px-4 md:px-0">
+        <Button
+          onClick={handleProcess}
+          disabled={isProcessing || !text.trim()}
+          className="gradient-bg gap-2 md:gap-3 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg w-full sm:w-auto"
+          size="lg"
+        >
+          {isProcessing ? (
+            <>
+              <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
+              {getButtonLabel()}
+            </>
+          ) : (
+            <>
+              {getButtonLabel()}
+              <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
