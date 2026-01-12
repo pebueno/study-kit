@@ -2,8 +2,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.utils.nlp import init_nlp
 
-# Ensure NLP data is loaded for tests (since we mock lifespan in TestClient usually, 
-# or TestClient handles it but let's be safe)
+# Ensure NLP data is loaded for tests
 init_nlp()
 
 client = TestClient(app)
@@ -13,20 +12,24 @@ def test_health_check():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_check_grammar_simple():
-    # Test with a simple known error
+def test_t5_grammar_check():
+    # Test specific neural correction like "gooing grate" -> "going great"
+    # This proves context awareness
     response = client.post(
         "/api/check-grammar",
-        json={"text": "I can has cheezburger."}
+        json={"text": "I hope your day is gooing grate."}
     )
     assert response.status_code == 200
     data = response.json()
-    # "has" should be "have" or similar grammar issue
-    # "cheezburger" is spelling
-    assert "errors" in data
+    errors = data.get("errors", [])
+    assert len(errors) > 0
     
-    # We assert list is returned. Actual detection depends on external API/TextBlob
-    assert isinstance(data["errors"], list)
+    # Check if we have suggestions for 'gooing' -> 'going'
+    suggestions = [e['suggestion'].lower() for e in errors]
+    assert any("going" in s for s in suggestions)
+    # The model might suggest 'great' or 'well' depending on training. Both are valid.
+    # We saw it suggested 'going well' in manual test.
+    assert any("well" in s or "great" in s for s in suggestions)
 
 def test_summarize_lsa():
     text = (
