@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+# StudyKit - Grammar & Writing Tools
 
-## Project info
+![StudyKit Banner](https://via.placeholder.com/1200x300/6366f1/ffffff?text=StudyKit+-+Your+Complete+Study+Toolkit)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🎯 Problem Description
 
-## How can I edit this code?
+Students and writers frequently struggle with grammar, spelling, and writing quality issues that can negatively impact their academic performance and professional communication.
 
-There are several ways of editing your application.
+**StudyKit** addresses these challenges by providing a free, student-focused writing assistant that combines grammar checking, text summarization, and synonym suggestions in one unified platform.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 📋 System Overview
 
-Changes made via Lovable will be committed automatically to this repo.
+**StudyKit** is a comprehensive educational web platform designed to help students improve their writing and study skills.
 
-**Use your preferred IDE**
+### Current Features (v1.0)
+- **Grammar Checker**: Detects and corrects spelling and grammar errors in real-time.
+- **Text Summarizer**: Condenses long texts into concise summaries.
+- **Synonym Replacer**: Suggests alternative words to improve vocabulary.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Planned Features (Future Releases)
+- Flashcards system
+- Study timer (Pomodoro)
+- Note organizer
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🚀 Technical Details
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Backend Integration
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+The frontend connects to a backend service for grammar checking.
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Endpoint**: `POST /api/check-grammar`
+- **Request**:
+  ```json
+  { "text": "Your text here" }
+  ```
+- **Response**:
+  ```json
+  {
+    "errors": [
+      {
+        "type": "spelling", // or "grammar", "style"
+        "position": { "start": 0, "end": 5 },
+        "suggestion": "CorrectedText",
+        "message": "Error description"
+      }
+    ]
+  }
+  ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### Technology Stack
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS
+- **Icons**: Lucide React
+- **Integration**: Fetch API
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🎨 User Interface Design
 
-**Use GitHub Codespaces**
+The UI is built with three core principles:
+1. **Simplicity**: Clean, distraction-free interface
+2. **Clarity**: Clear visual feedback and error highlighting
+3. **Accessibility**: Keyboard shortcuts, screen reader support, high contrast
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Layout Components:
+- **Header**: Logo and navigation
+- **Tool Tabs**: Grammar Checker, Summarize, Synonyms
+- **Input Panel**: Large textarea with word/character count
+- **Results Panel**: Corrected text with highlighted changes
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 🎯 Project Goals
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. **Solve a real problem**: Help students improve writing quality.
+2. **Provide free access**: Accessible tools for everyone.
+3. **Support learning**: Clear explanations for mistakes.
+4. **Scale for the future**: Foundation for a complete study toolkit.
