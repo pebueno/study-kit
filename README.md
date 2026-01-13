@@ -24,7 +24,8 @@ Students and writers frequently struggle with grammar, spelling, and writing qua
 - **Framework**: FastAPI 0.128 (Python 3.10+)
 - **Server**: Uvicorn (ASGI)
 - **NLP Libraries**:
-  - PyTorch 2.9+ (CPU-only) with Transformers for neural grammar correction
+  - **Google Gemini API** (Cloud) for lightweight, high-accuracy correction
+  - PyTorch 2.9+ (CPU-only) with Transformers for local neural grammar correction
   - LanguageTool for spelling/grammar checks
   - NLTK, TextBlob for synonym suggestions
   - Sumy for text summarization
