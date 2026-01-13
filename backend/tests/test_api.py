@@ -66,3 +66,92 @@ def test_synonyms_nltk():
     syns = data["synonyms"]
     # Check for common synonyms of 'happy' from WordNet
     assert any(w in syns for w in ["glad", "joyful", "felicitous", "content"])
+
+
+def test_grammar_check_empty_text():
+    """Test grammar check with empty text."""
+    response = client.post(
+        "/api/check-grammar",
+        json={"text": ""}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "errors" in data
+    assert isinstance(data["errors"], list)
+
+
+def test_grammar_check_valid_text():
+    """Test grammar check with valid text (should have no errors)."""
+    response = client.post(
+        "/api/check-grammar",
+        json={"text": "This is a perfectly valid sentence."}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "errors" in data
+
+
+def test_summarize_short_text():
+    """Test summarization with very short text."""
+    response = client.post(
+        "/api/summarize",
+        json={"text": "Short text."}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "summary" in data
+    assert len(data["summary"]) > 0
+
+
+def test_summarize_empty_text():
+    """Test summarization with empty text."""
+    response = client.post(
+        "/api/summarize",
+        json={"text": ""}
+    )
+    # Should handle gracefully
+    assert response.status_code in [200, 400, 422]
+
+
+def test_synonyms_multiple_words():
+    """Test synonym lookup with different words."""
+    words = ["good", "bad", "fast", "slow"]
+    for word in words:
+        response = client.post(
+            "/api/synonyms",
+            json={"word": word}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "synonyms" in data
+        assert isinstance(data["synonyms"], list)
+
+
+def test_synonyms_nonexistent_word():
+    """Test synonym lookup with made-up word."""
+    response = client.post(
+        "/api/synonyms",
+        json={"word": "xyzabc123"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "synonyms" in data
+    # Should return empty list or handle gracefully
+    assert isinstance(data["synonyms"], list)
+
+
+def test_api_error_handling():
+    """Test API error handling with invalid requests."""
+    # Missing required field
+    response = client.post(
+        "/api/check-grammar",
+        json={}
+    )
+    assert response.status_code in [400, 422]  # Bad request or unprocessable entity
+
+    # Invalid JSON structure
+    response = client.post(
+        "/api/summarize",
+        json={"wrong_field": "value"}
+    )
+    assert response.status_code in [400, 422]
