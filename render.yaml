@@ -9,5 +9,11 @@ services:
     envVars:
       - key: PORT
         value: 8000
-    # Free tier services sleep after 15 minutes of inactivity
-    # They will wake up on the next request (cold start ~30s)
+      - key: USE_T5_MODEL
+        value: false  # Disabled for free tier (saves 400MB+ memory)
+      - key: DATABASE_URL
+        value: sqlite:///./studykit.db  # SQLite in container (optional PostgreSQL upgrade)
+    # Free tier: 512MB RAM limit
+    # T5 model disabled by default to fit in memory
+    # Database optional - works without it
+    # Services sleep after 15 minutes of inactivity

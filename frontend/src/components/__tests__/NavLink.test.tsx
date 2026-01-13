@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import NavLink from '../NavLink';
+import { NavLink } from '../NavLink';
 
 describe('NavLink', () => {
   it('renders link text', () => {
     render(
       <BrowserRouter>
-        <NavLink to="/" label="Home" />
+        <NavLink to="/">Home</NavLink>
       </BrowserRouter>
     );
 
@@ -18,7 +18,7 @@ describe('NavLink', () => {
   it('renders with correct href', () => {
     render(
       <BrowserRouter>
-        <NavLink to="/about" label="About" />
+        <NavLink to="/about">About</NavLink>
       </BrowserRouter>
     );
 
@@ -29,9 +29,9 @@ describe('NavLink', () => {
   it('renders multiple nav links', () => {
     render(
       <BrowserRouter>
-        <NavLink to="/" label="Home" />
-        <NavLink to="/grammar" label="Grammar" />
-        <NavLink to="/summarize" label="Summarize" />
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/grammar">Grammar</NavLink>
+        <NavLink to="/summarize">Summarize</NavLink>
       </BrowserRouter>
     );
 

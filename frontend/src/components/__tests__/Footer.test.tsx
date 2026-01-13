@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Footer from '../Footer';
+import { Footer } from '../Footer';
 
 describe('Footer', () => {
   it('renders footer text', () => {
@@ -14,6 +14,7 @@ describe('Footer', () => {
   it('renders copyright information', () => {
     render(<Footer />);
 
-    expect(screen.getByText(/StudyKit/i)).toBeInTheDocument();
+    const elements = screen.getAllByText(/StudyKit/i);
+    expect(elements.length).toBeGreaterThan(0);
   });
 });

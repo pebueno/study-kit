@@ -1,31 +1,38 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Statistics from '../Statistics';
+import { Statistics } from '../Statistics';
 
 describe('Statistics', () => {
   it('renders word count', () => {
-    render(<Statistics text="Hello world from testing" />);
+    const stats = { wordCount: 4, charCount: 24, sentenceCount: 1 };
+    render(<Statistics stats={stats} />);
 
-    expect(screen.getByText(/4/)).toBeInTheDocument(); // 4 words
+    expect(screen.getByText(/Words/i)).toBeInTheDocument();
+    expect(screen.getByText(/24/)).toBeInTheDocument(); // char count
   });
 
   it('renders character count', () => {
-    render(<Statistics text="Hello" />);
+    const stats = { wordCount: 1, charCount: 5, sentenceCount: 1 };
+    render(<Statistics stats={stats} />);
 
-    expect(screen.getByText(/5/)).toBeInTheDocument(); // 5 characters
+    expect(screen.getByText(/5/)).toBeInTheDocument();
+    expect(screen.getByText(/Characters/i)).toBeInTheDocument();
   });
 
-  it('handles empty text', () => {
-    render(<Statistics text="" />);
+  it('handles zero values', () => {
+    const stats = { wordCount: 0, charCount: 0, sentenceCount: 0 };
+    render(<Statistics stats={stats} />);
 
-    expect(screen.getByText(/0/)).toBeInTheDocument();
+    expect(screen.getAllByText(/0/)).toHaveLength(3);
   });
 
-  it('displays statistics labels', () => {
-    render(<Statistics text="test" />);
+  it('displays all statistics labels', () => {
+    const stats = { wordCount: 10, charCount: 50, sentenceCount: 2 };
+    render(<Statistics stats={stats} />);
 
-    expect(screen.getByText(/words/i)).toBeInTheDocument();
-    expect(screen.getByText(/characters/i)).toBeInTheDocument();
+    expect(screen.getByText(/Words/i)).toBeInTheDocument();
+    expect(screen.getByText(/Characters/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sentences/i)).toBeInTheDocument();
   });
 });

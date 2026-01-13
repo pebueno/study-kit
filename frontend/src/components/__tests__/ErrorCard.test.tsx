@@ -1,33 +1,55 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ErrorCard from '../ErrorCard';
+import { ErrorCard } from '../ErrorCard';
 
 describe('ErrorCard', () => {
   it('renders error message', () => {
     const error = {
-      type: 'grammar',
+      type: 'grammar' as const,
       position: { start: 0, end: 5 },
+      word: 'Helo',
       suggestion: 'Hello',
       message: 'Spelling error detected'
     };
 
-    render(<ErrorCard error={error} />);
+    const mockOnFix = vi.fn();
+    const mockOnHighlight = vi.fn();
+
+    render(
+      <ErrorCard
+        error={error}
+        isHighlighted={false}
+        onFix={mockOnFix}
+        onHighlight={mockOnHighlight}
+      />
+    );
 
     expect(screen.getByText('Spelling error detected')).toBeInTheDocument();
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.getByText(/Hello/)).toBeInTheDocument();
   });
 
   it('displays error type', () => {
     const error = {
-      type: 'spelling',
+      type: 'spelling' as const,
       position: { start: 0, end: 5 },
-      suggestion: 'correct',
+      word: 'teh',
+      suggestion: 'the',
       message: 'Misspelled word'
     };
 
-    render(<ErrorCard error={error} />);
+    const mockOnFix = vi.fn();
+    const mockOnHighlight = vi.fn();
 
-    expect(screen.getByText(/spelling/i)).toBeInTheDocument();
+    render(
+      <ErrorCard
+        error={error}
+        isHighlighted={false}
+        onFix={mockOnFix}
+        onHighlight={mockOnHighlight}
+      />
+    );
+
+    expect(screen.getByText(/Spelling/i)).toBeInTheDocument();
   });
 });
