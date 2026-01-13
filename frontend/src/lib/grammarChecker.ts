@@ -11,6 +11,7 @@ export async function checkGrammar(text: string): Promise<CheckResult> {
     if (!response.ok) throw new Error(`API error: ${response.status}`);
     const data = await response.json();
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const errors: GrammarError[] = (data.errors || []).map((err: any) => ({
       id: Math.random().toString(36).substring(2, 9),
       type: (err.type === 'spelling' || err.type === 'grammar' || err.type === 'style') ? err.type : 'grammar',

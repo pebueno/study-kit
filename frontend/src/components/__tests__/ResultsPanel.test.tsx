@@ -19,8 +19,10 @@ describe('ResultsPanel', () => {
         errors,
         stats: { spellingErrors: 0, grammarErrors: 1, styleErrors: 0 }
     };
+
     const { container } = render(
         <ResultsPanel 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             result={result as any} 
             highlightedError={null}
             onFixError={() => {}}
@@ -37,6 +39,7 @@ describe('ResultsPanel', () => {
     };
     const { container } = render(
         <ResultsPanel 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             result={result as any} 
             highlightedError={null}
             onFixError={() => {}}
@@ -73,6 +76,7 @@ describe('ResultsPanel', () => {
 
     const { container } = render(
         <ResultsPanel 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             result={result as any} 
             highlightedError={null}
             onFixError={() => {}}
