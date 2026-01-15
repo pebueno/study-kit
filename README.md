@@ -217,7 +217,7 @@ curl -X POST http://localhost:8000/api/summarize \
 ```bash
 # Backend tests (unit + integration)
 cd backend
-pytest tests/ -v
+uv run pytest tests/ -v
 
 # Frontend tests
 cd frontend
